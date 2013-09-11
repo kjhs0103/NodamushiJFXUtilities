@@ -36,6 +36,8 @@ public class NDialogController implements Initializable{
     
     @Override
     public void initialize(URL location ,ResourceBundle resources){
+        
+        // 本来はSkinで実装すべき内容
         messageLabel.textProperty().bind(ndialog.messageProperty());
         titleLabel.textProperty().bind(ndialog.titleProperty());
         cancelButton.textProperty().bind(ndialog.cancelTextProperty());
@@ -75,6 +77,11 @@ public class NDialogController implements Initializable{
         
         imageView.fitWidthProperty().bind(imageWidth);
         imageView.fitHeightProperty().bind(imageHeight);
+        
+        //   Skinの内容終わり
+        
+        
+        
         cancelButton.setOnAction(new EventHandler<ActionEvent>(){
             public void handle(ActionEvent event){
                 ndialog.cancel();
@@ -93,6 +100,4 @@ public class NDialogController implements Initializable{
             }
         });
     }
-
-
 }

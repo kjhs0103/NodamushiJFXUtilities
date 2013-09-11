@@ -11,6 +11,8 @@ import nodamushi.jfx.bean.ReadOnlyObjectPropertyFactory;
 
 public class NDialog extends Control implements DialogModel{
    
+    private static final String SKINCSS = "-fx-skin:'%s';";
+    
     public NDialog(){
         getStyleClass().add("ndialog");
         setResult(Result.CANCELLED);
@@ -19,7 +21,7 @@ public class NDialog extends Control implements DialogModel{
         setNoText("No");
         setCancelText("Cancel");
         
-        setSkinClassName(NDialogSkin.class.getName());
+        setStyle(String.format(SKINCSS, NDialogSkin.class.getName()));
     }
     
     
@@ -56,6 +58,9 @@ public class NDialog extends Control implements DialogModel{
         setResult(Result.NO);
         closeDialog();
     }
+    
+    
+    
     
     //-----------------------------------------------
     //                  property
