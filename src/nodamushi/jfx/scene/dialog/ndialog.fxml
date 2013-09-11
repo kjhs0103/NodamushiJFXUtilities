@@ -18,12 +18,12 @@
     </ImageView>
     <VBox maxHeight="+Infinity" maxWidth="+Infinity" minHeight="-Infinity" prefWidth="400.0" spacing="7.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
       <children>
-        <Label id="messageLabel" fx:id="titleLabel" text="title" textAlignment="LEFT" wrapText="true">
+        <Label id="messageLabel" fx:id="titleLabel" styleClass="titlelabel" text="title" textAlignment="LEFT" wrapText="true">
           <font>
             <Font name="System Bold" size="13.0" />
           </font>
         </Label>
-        <Label id="detailsLabel" fx:id="messageLabel" text="message" textAlignment="LEFT" wrapText="true">
+        <Label id="detailsLabel" fx:id="messageLabel" styleClass="messagelabel" text="message" textAlignment="LEFT" wrapText="true">
           <font>
             <Font size="12.0" />
           </font>
@@ -34,7 +34,7 @@
       <children>
         <HBox id="HBox" fx:id="actionParent" alignment="CENTER">
           <children>
-            <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" HBox.hgrow="NEVER">
+            <Button fx:id="cancelButton" mnemonicParsing="false" styleClass="cancelbutton" text="Cancel" HBox.hgrow="NEVER">
               <HBox.margin>
                 <Insets right="14.0" />
               </HBox.margin>
@@ -45,14 +45,14 @@
           </HBox.margin>
         </HBox>
         <Pane maxWidth="+Infinity" HBox.hgrow="ALWAYS" />
-        <Button fx:id="noButton" cancelButton="true" minWidth="80.0" mnemonicParsing="false" text="No" HBox.hgrow="NEVER">
+        <Button fx:id="noButton" cancelButton="true" minWidth="80.0" mnemonicParsing="false" styleClass="nobutton" text="No" HBox.hgrow="NEVER">
           <HBox.margin>
             <Insets />
           </HBox.margin>
         </Button>
         <HBox id="HBox" fx:id="okParent" alignment="CENTER">
           <children>
-            <Button fx:id="yesButton" minWidth="80.0" mnemonicParsing="false" text="Yes" HBox.hgrow="NEVER">
+            <Button fx:id="yesButton" minWidth="80.0" mnemonicParsing="false" styleClass="yesbutton" text="Yes" HBox.hgrow="NEVER">
               <HBox.margin>
                 <Insets left="14.0" />
               </HBox.margin>

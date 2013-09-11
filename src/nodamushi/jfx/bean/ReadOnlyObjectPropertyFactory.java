@@ -3,10 +3,13 @@ package nodamushi.jfx.bean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectPropertyBase;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
-public class ReadOnlyObjectPropertyFactory<T>{
+public class ReadOnlyObjectPropertyFactory<T> extends ReadOnlyFactoryBase<T>{
     private static abstract class Base<T> extends ReadOnlyObjectPropertyBase<T>{
         
         private final String name;
@@ -23,6 +26,46 @@ public class ReadOnlyObjectPropertyFactory<T>{
         @Override
         public final String getName(){
             return name;
+        }
+        
+        @Override
+        public void addListener(ChangeListener<? super T> listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void addListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(ChangeListener<? super T> listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
         }
 
         abstract void set(T d);
@@ -48,17 +91,15 @@ public class ReadOnlyObjectPropertyFactory<T>{
                 }
             }else{
                 T o = value;
-                if(o!=v)
+                if(o!=v){
                     value = v;
-                Platform.runLater(new Runnable(){
-                    public void run(){
-                        T o = value;
-                        if(o!=v){
+                    Platform.runLater(new Runnable(){
+                        public void run(){
                             value = v;
                             fireValueChangedEvent();
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
@@ -115,15 +156,23 @@ public class ReadOnlyObjectPropertyFactory<T>{
      * @param useAtomic java.util.concurrent.atomicパッケージを使うかどうか。
      */
     public ReadOnlyObjectPropertyFactory(Object bean,String name,T initValue,boolean useAtomic){
+        super(useAtomic);
         property =useAtomic?new AtomicProperty<>(bean, name, initValue): 
             new Property<>(bean, name, initValue);
     }
     
     public void setValue(T value){
+        checkIsnotBound();
         property.set(value);
     }
     
     public T getValue(){return property.get();}
     
     public ReadOnlyObjectProperty<T> get(){return property;}
+    
+    @Override
+    protected void update(ObservableValue<? extends T> observable){
+        T value = observable.getValue();
+        property.set(value);
+    }
 }

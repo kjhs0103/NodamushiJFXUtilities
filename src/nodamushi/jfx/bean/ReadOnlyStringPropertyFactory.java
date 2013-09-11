@@ -1,23 +1,16 @@
 package nodamushi.jfx.bean;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanPropertyBase;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-/**
- * ReadOnlyBooleanPropertyWraperとの違いは、
- * Propertyは一つしか作らないことと、
- * マルチスレッドをちょっと考慮しています。<br>
- * @author nodamushi
- *
- */
-public class ReadOnlyBooleanPropertyFactory extends ReadOnlyFactoryBase<Boolean>{
-    private static abstract class Base extends ReadOnlyBooleanPropertyBase{
+public class ReadOnlyStringPropertyFactory extends ReadOnlyFactoryBase<String>{
+    private static abstract class Base extends ReadOnlyStringPropertyBase{
         
         private final String name;
         private final Object bean;
@@ -34,8 +27,9 @@ public class ReadOnlyBooleanPropertyFactory extends ReadOnlyFactoryBase<Boolean>
         public final String getName(){
             return name;
         }
+        
         @Override
-        public void addListener(ChangeListener<? super Boolean> listener){
+        public void addListener(ChangeListener<? super String> listener){
             if(Platform.isFxApplicationThread())
                 super.addListener(listener);
             else
@@ -55,7 +49,7 @@ public class ReadOnlyBooleanPropertyFactory extends ReadOnlyFactoryBase<Boolean>
         }
         
         @Override
-        public void removeListener(ChangeListener<? super Boolean> listener){
+        public void removeListener(ChangeListener<? super String> listener){
             if(Platform.isFxApplicationThread())
                 super.removeListener(listener);
             else
@@ -73,36 +67,36 @@ public class ReadOnlyBooleanPropertyFactory extends ReadOnlyFactoryBase<Boolean>
                     super.removeListener(listener);
                 }
         }
-        abstract void set(boolean d);
+
+        abstract void set(String d);
     }
     private static class Property extends Base{
-        private boolean value;
-        Property(Object bean,String name,boolean init){
+        private String value;
+        Property(Object bean,String name,String init){
             super(bean,name);
             value =init;
         }
 
         @Override
-        public boolean get(){
+        public String get(){
             return value;
         }
         @Override
-        void set(final boolean v){
+        void set(final String v){
             if(Platform.isFxApplicationThread()){   
-                boolean o = value;
+                String o = value;
                 if(o!=v){
                     value = v;
                     fireValueChangedEvent();
                 }
             }else{
-                boolean o = value;
+                String o = value;
                 if(o!=v){
                     value = v;
                     Platform.runLater(new Runnable(){
                         public void run(){
                             value = v;
                             fireValueChangedEvent();
-                            
                         }
                     });
                 }
@@ -111,21 +105,21 @@ public class ReadOnlyBooleanPropertyFactory extends ReadOnlyFactoryBase<Boolean>
     }
     
     private static class AtomicProperty extends Base{
-        private AtomicBoolean value;
+        private AtomicReference<String> value;
         private Runnable run = new Runnable(){
             public void run(){ fireValueChangedEvent();}
         };
-        AtomicProperty(Object bean,String name,boolean init){
+        AtomicProperty(Object bean,String name,String init){
             super(bean,name);
             value.set(init);
         }
 
         @Override
-        public boolean get(){
+        public String get(){
             return value.get();
         }
         @Override
-        void set(final boolean v){
+        void set(final String v){
             value.set(v);
             if(Platform.isFxApplicationThread()){
                     fireValueChangedEvent();
@@ -138,21 +132,21 @@ public class ReadOnlyBooleanPropertyFactory extends ReadOnlyFactoryBase<Boolean>
     
     private final Base property;
     /**
-     * 初期値0、java.util.concurrent.atomicパッケージは使わないでプロパティを作成します。
+     * 初期値null、java.util.concurrent.atomicパッケージは使わないでプロパティを作成します。
      * @param bean ReadOnlyPropertyのgetBeanで返すオブジェクト
      * @param name ReadOnlyPropertyのgetNameで返す名前
      */
-    public ReadOnlyBooleanPropertyFactory(Object bean,String name){
-        this(bean,name,false,false);
+    public ReadOnlyStringPropertyFactory(Object bean,String name){
+        this(bean,name,null,false);
     }
     /**
-     * 初期値0でプロパティを作成します。
+     * 初期値nullでプロパティを作成します。
      * @param bean ReadOnlyPropertyのgetBeanで返すオブジェクト
      * @param name ReadOnlyPropertyのgetNameで返す名前
      * @param useAtomic java.util.concurrent.atomicパッケージを使うかどうか。
      */
-    public ReadOnlyBooleanPropertyFactory(Object bean,String name,boolean useAtomic){
-        this(bean,name,false,useAtomic);
+    public ReadOnlyStringPropertyFactory(Object bean,String name,boolean useAtomic){
+        this(bean,name,null,useAtomic);
     }
     /**
      * プロパティを作成します。
@@ -161,24 +155,23 @@ public class ReadOnlyBooleanPropertyFactory extends ReadOnlyFactoryBase<Boolean>
      * @param initValue 初期値
      * @param useAtomic java.util.concurrent.atomicパッケージを使うかどうか。
      */
-    public ReadOnlyBooleanPropertyFactory(Object bean,String name,boolean initValue,boolean useAtomic){
+    public ReadOnlyStringPropertyFactory(Object bean,String name,String initValue,boolean useAtomic){
         super(useAtomic);
-        property =useAtomic?new AtomicProperty(bean, name, initValue): new Property(bean, name, initValue);
+        property =useAtomic?new AtomicProperty(bean, name, initValue): 
+            new Property(bean, name, initValue);
     }
     
-    public void setValue(boolean value){
-        checkIsnotBound();
+    public void setValue(String value){
         property.set(value);
     }
     
-    public boolean getValue(){return property.get();}
+    public String getValue(){return property.get();}
     
-    
-    public ReadOnlyBooleanProperty get(){return property;}
+    public ReadOnlyStringProperty get(){return property;}
     
     @Override
-    protected void update(ObservableValue<? extends Boolean> observable){
-        boolean value = observable.getValue();
+    protected void update(ObservableValue<? extends String> observable){
+        String value = observable.getValue();
         property.set(value);
     }
 }

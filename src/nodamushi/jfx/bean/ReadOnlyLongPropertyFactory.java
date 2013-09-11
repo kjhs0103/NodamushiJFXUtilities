@@ -3,10 +3,13 @@ package nodamushi.jfx.bean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyLongProperty;
 import javafx.beans.property.ReadOnlyLongPropertyBase;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
-public class ReadOnlyLongPropertyFactory{
+public class ReadOnlyLongPropertyFactory extends ReadOnlyFactoryBase<Long>{
     private static abstract class Base extends ReadOnlyLongPropertyBase{
         
         private final String name;
@@ -23,6 +26,46 @@ public class ReadOnlyLongPropertyFactory{
         @Override
         public final String getName(){
             return name;
+        }
+        
+        @Override
+        public void addListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void addListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
         }
 
         abstract void set(long d);
@@ -48,17 +91,15 @@ public class ReadOnlyLongPropertyFactory{
                 }
             }else{
                 long o = value;
-                if(o!=v)
+                if(o!=v){
                     value = v;
-                Platform.runLater(new Runnable(){
-                    public void run(){
-                        long o = value;
-                        if(o!=v){
+                    Platform.runLater(new Runnable(){
+                        public void run(){
                             value = v;
                             fireValueChangedEvent();
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
@@ -115,14 +156,22 @@ public class ReadOnlyLongPropertyFactory{
      * @param useAtomic java.util.concurrent.atomicパッケージを使うかどうか。
      */
     public ReadOnlyLongPropertyFactory(Object bean,String name,long initValue,boolean useAtomic){
+        super(useAtomic);
         property =useAtomic?new AtomicProperty(bean, name, initValue): new Property(bean, name, initValue);
     }
     
     public void setValue(long value){
+        checkIsnotBound();
         property.set(value);
     }
     
     public long getValue(){return property.get();}
     
     public ReadOnlyLongProperty get(){return property;}
+    
+    @Override
+    protected void update(ObservableValue<? extends Long> observable){
+        long value = observable.getValue();
+        property.set(value);
+    }
 }

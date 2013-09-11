@@ -3,10 +3,13 @@ package nodamushi.jfx.bean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.ReadOnlyFloatPropertyBase;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
-public class ReadOnlyFloatPropertyFactory{
+public class ReadOnlyFloatPropertyFactory extends ReadOnlyFactoryBase<Float>{
     private static abstract class Base extends ReadOnlyFloatPropertyBase{
         
         private final String name;
@@ -24,7 +27,45 @@ public class ReadOnlyFloatPropertyFactory{
         public final String getName(){
             return name;
         }
-
+        @Override
+        public void addListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void addListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
         abstract void set(float d);
     }
     private static class Property extends Base{
@@ -48,17 +89,15 @@ public class ReadOnlyFloatPropertyFactory{
                 }
             }else{
                 float o = value;
-                if(o!=v)
+                if(o!=v){
                     value = v;
-                Platform.runLater(new Runnable(){
-                    public void run(){
-                        float o = value;
-                        if(o!=v){
+                    Platform.runLater(new Runnable(){
+                        public void run(){
                             value = v;
                             fireValueChangedEvent();
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
@@ -115,14 +154,22 @@ public class ReadOnlyFloatPropertyFactory{
      * @param useAtomic java.util.concurrent.atomicパッケージを使うかどうか。
      */
     public ReadOnlyFloatPropertyFactory(Object bean,String name,float initValue,boolean useAtomic){
+        super(useAtomic);
         property =useAtomic?new AtomicProperty(bean, name, initValue): new Property(bean, name, initValue);
     }
     
     public void setValue(float value){
+        checkIsnotBound();
         property.set(value);
     }
     
     public float getValue(){return property.get();}
     
     public ReadOnlyFloatProperty get(){return property;}
+    
+    @Override
+    protected void update(ObservableValue<? extends Float> observable){
+        float value = observable.getValue();
+        property.set(value);
+    }
 }

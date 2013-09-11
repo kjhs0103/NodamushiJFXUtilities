@@ -3,8 +3,11 @@ package nodamushi.jfx.bean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoublePropertyBase;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 /**
  * ReadOnlyPropertyDoubleを作りたいけど、自分からは値を書き換えられるようにしたい。<br>
@@ -12,7 +15,7 @@ import javafx.beans.property.ReadOnlyDoublePropertyBase;
  * @author nodamushi
  *
  */
-public class ReadOnlyDoublePropertyFactory{
+public class ReadOnlyDoublePropertyFactory extends ReadOnlyFactoryBase<Double>{
     private static abstract class Base extends ReadOnlyDoublePropertyBase{
         
         private final String name;
@@ -31,6 +34,46 @@ public class ReadOnlyDoublePropertyFactory{
             return name;
         }
 
+        @Override
+        public void addListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void addListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
+        
         abstract void set(double d);
     }
     private static class Property extends Base{
@@ -54,17 +97,15 @@ public class ReadOnlyDoublePropertyFactory{
                 }
             }else{
                 double o = value;
-                if(o!=d)
+                if(o!=d){
                     value = d;
-                Platform.runLater(new Runnable(){
-                    public void run(){
-                        double o = value;
-                        if(o!=d){
+                    Platform.runLater(new Runnable(){
+                        public void run(){
                             value = d;
                             fireValueChangedEvent();
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
@@ -121,15 +162,21 @@ public class ReadOnlyDoublePropertyFactory{
      * @param useAtomic java.util.concurrent.atomicパッケージを使うかどうか。
      */
     public ReadOnlyDoublePropertyFactory(Object bean,String name,double initValue,boolean useAtomic){
+        super(useAtomic);
         property =useAtomic?new AtomicProperty(bean, name, initValue): new Property(bean, name, initValue);
     }
     
     public void setValue(double value){
+        checkIsnotBound();
         property.set(value);
     }
     
     public double getValue(){return property.get();}
     
     public ReadOnlyDoubleProperty get(){return property;}
-    
+    @Override
+    protected void update(ObservableValue<? extends Double> observable){
+        double value = observable.getValue();
+        property.set(value);
+    }
 }

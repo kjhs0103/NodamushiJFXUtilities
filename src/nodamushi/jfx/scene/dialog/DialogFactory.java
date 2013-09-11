@@ -2,7 +2,6 @@ package nodamushi.jfx.scene.dialog;
 
 import java.util.Collection;
 
-import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -296,7 +295,7 @@ public final class DialogFactory{
         WindowDialogCloseFunction f = new WindowDialogCloseFunction(s);
         model.setDialogCloseFunction(f);
         
-        
+        com.sun.javafx.css.StyleManager.getInstance().reloadStylesheets(s.getScene());
         
         
         if(isWait)
@@ -389,8 +388,8 @@ public final class DialogFactory{
      * @param contents 表示する内容
      * @param model ダイアログのコントローラー
      * @param parentWindow ダイアログの親ウィンドウ
-     * @param x 親ウィンドウから見たダイアログの表示位置のx座標
-     * @param y 親ウィンドウから見たダイアログの表示位置のy座標
+     * @param x ダイアログの表示位置のx座標（スクリーン座標系）
+     * @param y ダイアログの表示位置のy座標（スクリーン座標系）
      * @throws InterruptedException
      *このメソッドをJavaFXのスレッド以外から呼び出した時、待機中に割り込まれた場合にのみ発生します。
      * @throws NullPointerException contents,modelがnullの時

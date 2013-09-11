@@ -20,6 +20,7 @@ public class NDialog extends Control implements DialogModel{
         setCancelText("Cancel");
         
         setSkinClassName(NDialogSkin.class.getName());
+        
     }
     
     
@@ -60,6 +61,8 @@ public class NDialog extends Control implements DialogModel{
     //-----------------------------------------------
     //                  property
     //-----------------------------------------------
+    
+    
     private StringProperty messageProperty = new SimpleStringProperty(this, "message");
     public String getMessage(){return messageProperty.get();}
     public void setMessage(String str){messageProperty.set(str);}
@@ -142,6 +145,8 @@ public class NDialog extends Control implements DialogModel{
     public void setStageStyle(StageStyle style){stageStyleProperty.set(style);}
     public ObjectProperty<StageStyle> stageStyleProperty(){return stageStyleProperty;}
     
+
+
 }
 
 

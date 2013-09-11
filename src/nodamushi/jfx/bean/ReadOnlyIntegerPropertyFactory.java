@@ -3,10 +3,13 @@ package nodamushi.jfx.bean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerPropertyBase;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
-public class ReadOnlyIntegerPropertyFactory{
+public class ReadOnlyIntegerPropertyFactory extends ReadOnlyFactoryBase<Integer>{
     private static abstract class Base extends ReadOnlyIntegerPropertyBase{
         
         private final String name;
@@ -25,6 +28,46 @@ public class ReadOnlyIntegerPropertyFactory{
             return name;
         }
 
+        @Override
+        public void addListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void addListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.addListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.addListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(ChangeListener<? super Number> listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
+        
+        @Override
+        public void removeListener(InvalidationListener listener){
+            if(Platform.isFxApplicationThread())
+                super.removeListener(listener);
+            else
+                synchronized (this) {//runnableの方が良いか？
+                    super.removeListener(listener);
+                }
+        }
+        
         abstract void set(int d);
     }
     private static class Property extends Base{
@@ -48,17 +91,15 @@ public class ReadOnlyIntegerPropertyFactory{
                 }
             }else{
                 int o = value;
-                if(o!=v)
+                if(o!=v){
                     value = v;
-                Platform.runLater(new Runnable(){
-                    public void run(){
-                        int o = value;
-                        if(o!=v){
+                    Platform.runLater(new Runnable(){
+                        public void run(){
                             value = v;
                             fireValueChangedEvent();
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
@@ -115,6 +156,7 @@ public class ReadOnlyIntegerPropertyFactory{
      * @param useAtomic java.util.concurrent.atomicパッケージを使うかどうか。
      */
     public ReadOnlyIntegerPropertyFactory(Object bean,String name,int initValue,boolean useAtomic){
+        super(useAtomic);
         property =useAtomic?new AtomicProperty(bean, name, initValue): new Property(bean, name, initValue);
     }
     
@@ -125,4 +167,10 @@ public class ReadOnlyIntegerPropertyFactory{
     public int getValue(){return property.get();}
     
     public ReadOnlyIntegerProperty get(){return property;}
+    
+    @Override
+    protected void update(ObservableValue<? extends Integer> observable){
+        int value = observable.getValue();
+        property.set(value);
+    }
 }
