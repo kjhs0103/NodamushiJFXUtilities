@@ -20,7 +20,6 @@ public class NDialog extends Control implements DialogModel{
         setCancelText("Cancel");
         
         setSkinClassName(NDialogSkin.class.getName());
-        
     }
     
     
@@ -122,9 +121,8 @@ public class NDialog extends Control implements DialogModel{
 
     private ReadOnlyObjectPropertyFactory<Result> resultFactory =
             new ReadOnlyObjectPropertyFactory<>(this, "result");
-    private ReadOnlyObjectProperty<Result> resultProperty = resultFactory.get();
-    public ReadOnlyObjectProperty<Result> resultProperty(){return resultProperty;}
-    public Result getResult(){return resultProperty.get();}
+    public ReadOnlyObjectProperty<Result> resultProperty(){return resultFactory.get();}
+    public Result getResult(){return resultFactory.getValue();}
     private void setResult(Result value){resultFactory.setValue(value);}
     
     private ObjectProperty<Modality> modalityProperty = new SimpleObjectProperty<>(this, "modality");
